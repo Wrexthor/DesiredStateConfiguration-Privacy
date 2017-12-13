@@ -1,0 +1,1 @@
+A Desired State Configuration script to increase privacy in windows by disabling telemetry feaures in windows.
