@@ -12,6 +12,7 @@ This prevents updates from re-enabling features in the background
 #>
 Configuration InitialScript
 {
+    # this script installs the modules needed for the rest of the DSC files to work
     Import-DscResource –ModuleName 'PSDesiredStateConfiguration'
     Node $env:COMPUTERNAME
     {
@@ -37,6 +38,8 @@ Configuration InitialScript
 
 }
 Configuration InstallApplications
+# installs applications using Chocolatey
+# anything in Chocolatey repos can be added
 {
     Import-DscResource -ModuleName cChoco
     Node $env:COMPUTERNAME
@@ -55,7 +58,7 @@ Configuration InstallApplications
             Name = 'notepadplusplus'
             DependsOn = '[cChocoInstaller]Install'
         }
-        cChocoPackageInstaller InstallsplunkUniversalforwarder 
+        cChocoPackageInstaller InstallsplunkUniversalforwarder
         {
             Name = 'splunk-universalforwarder'
             DependsOn = '[cChocoInstaller]Install'
@@ -187,48 +190,57 @@ Configuration DisableServices
     {
         # services
      Service DisableDiagTrack
+     # http://batcmd.com/windows/10/services/diagtrack/
      {
          Name = "DiagTrack"
          StartupType = "Disabled"
          State = "Stopped"
      }
      Service DisableDmwappushservice
+     # http://batcmd.com/windows/10/services/dmwappushservice/
+     # NOTE Sysprep w/ Generalize WILL FAIL if you disable the DmwApPushService
      {
          Name = "dmwappushservice"
          StartupType = "Disabled"
          State = "Stopped"
      }
      Service DisableDiagnostichub
+     # http://batcmd.com/windows/10/services/diagnosticshub-standardcollector-service/
      {
          Name = "diagnosticshub.standardcollector.service"
          StartupType = "Disabled"
          State = "Stopped"
      }
      Service DisableTrkWks
+     # http://batcmd.com/windows/10/services/trkwks/
      {
          Name = "TrkWks"
          StartupType = "Disabled"
          State = "Stopped"
      }
      Service DisableWMPNetworkSvc
+     # http://batcmd.com/windows/10/services/wmpnetworksvc/
      {
          Name = "WMPNetworkSvc"
          StartupType = "Disabled"
          State = "Stopped"
      }
      Service DisableLocationService
+     # http://batcmd.com/windows/10/services/lfsvc/
      {
          Name = "lfsvc"
          StartupType = "Disabled"
          State = "Stopped"
      }
      Service DisableMapsBroker
+     # http://batcmd.com/windows/10/services/mapsbroker/
      {
          Name = "MapsBroker"
          StartupType = "Disabled"
          State = "Stopped"
      }
      Service DisableXboxAuth
+     # below are 5 xbox services, comment out if xbox features are needed
      {
          Name = "XblAuthManager"
          StartupType = "Disabled"
@@ -245,6 +257,18 @@ Configuration DisableServices
          Name = "XboxNetApiSvc"
          StartupType = "Disabled"
          State = "Stopped"
+     }
+     Service DisableXboxGipSvc
+     {
+         Name = "XboxGipSvc"
+         StartupType = "Disabled"
+         State = "Stopped"
+     }
+     Service Disablexbgm
+     {
+         Name = "xbgm"
+         StartupType = "Disabled"
+         State = "Stopped"
      }   
     }
       
@@ -254,8 +278,10 @@ Configuration AlterRegistry
     Import-DscResource –ModuleName 'PSDesiredStateConfiguration'
     Node $env:COMPUTERNAME
     {
-        # altering registry        
+     # altering registry        
      Registry DisableWindowsConsumerFeatures
+     # removes apps like candy crush, twitter etc from installing
+     # https://blogs.technet.microsoft.com/mniehaus/2015/11/23/seeing-extra-apps-turn-them-off/
      {
          Ensure = "Present"
          Key = "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\Cloud Content"
@@ -264,6 +290,7 @@ Configuration AlterRegistry
          ValueData = 1
      }
      Registry DisableTelemetry
+     # disabled win10 home/pro telemetry
      {
          Ensure = "Present"
          Key = "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\DataCollection"
@@ -281,6 +308,7 @@ Configuration AlterRegistry
      }
      <#
      Registry DisableBiometrics
+     # this disables biometrics, uncommented by default to avoid breaking functionality
      {
          Ensure = "Present"
          Key = "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Biometrics"
@@ -289,6 +317,8 @@ Configuration AlterRegistry
          ValueData = 0
      }
      #>
+     <#     
+     # commented out due to not knowing exactly what it impacts
      Registry DisableConferencing
      {
          Ensure = "Present"
@@ -297,8 +327,10 @@ Configuration AlterRegistry
          ValueType = "Dword"
          ValueData = 1
      }
+     #>
      <#
      Registry DisableInputPersonalization
+     # disables input personalization
      {
          Ensure = "Present"
          Key = "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\InputPersonalization"
@@ -307,6 +339,7 @@ Configuration AlterRegistry
          ValueData = 0
      }     
      Registry DisableIEGeolocation
+     # disable geolocation in IE
      {
          Ensure = "Present"
          Key = "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Internet Explorer\Geolocation"
@@ -322,7 +355,8 @@ Configuration AlterRegistry
          ValueType = "Dword"
          ValueData = 1
      }
-     Registry DisableIEMain
+     Registry EnableDoNotTrack
+     # enables do not track in IE
      {
          Ensure = "Present"
          Key = "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Internet Explorer\Main"
@@ -331,6 +365,7 @@ Configuration AlterRegistry
          ValueData = 1
      }
      Registry DisableIEPrivacy
+     # enables private browsing mode
      {
          Ensure = "Present"
          Key = "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Internet Explorer\Privacy"
@@ -340,6 +375,7 @@ Configuration AlterRegistry
      }
      #>
      Registry DisableIEImprovementProgram
+     # disables sending data to microsoft
      {
          Ensure = "Present"
          Key = "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Internet Explorer\SQM"
@@ -348,6 +384,7 @@ Configuration AlterRegistry
          ValueData = 0
      }
      Registry DisableErrorReportingDo
+     # disables sending data to microsoft
      {
          Ensure = "Present"
          Key = "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\PCHealth\ErrorReporting"
@@ -356,6 +393,7 @@ Configuration AlterRegistry
          ValueData = 0
      }
      Registry DisableErrorReportingQue
+     # disables sending data to microsoft
      {
          Ensure = "Present"
          Key = "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\PCHealth\ErrorReporting"
@@ -364,6 +402,7 @@ Configuration AlterRegistry
          ValueData = 0
      }
      Registry DisableErrorReportingFileTree
+     # disables sending data to microsoft
      {
          Ensure = "Present"
          Key = "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\PCHealth\ErrorReporting\DW"
@@ -372,6 +411,7 @@ Configuration AlterRegistry
          ValueData = ""
      }
      Registry DisableErrorReportingURL
+     # disables sending data to microsoft
      {
          Ensure = "Present"
          Key = "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\PCHealth\ErrorReporting\DW"
@@ -380,6 +420,7 @@ Configuration AlterRegistry
          ValueData = 1
      }
      Registry DisableErrorReportingFile
+     # disables sending data to microsoft
      {
          Ensure = "Present"
          Key = "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\PCHealth\ErrorReporting\DW"
@@ -387,7 +428,8 @@ Configuration AlterRegistry
          ValueType = "Dword"
          ValueData = 1
      }
-     Registry DisableErrorReportingSecondLevel
+     Registry SetErrorReportingSecondLevel
+     # disables sending data to microsoft
      {
          Ensure = "Present"
          Key = "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\PCHealth\ErrorReporting\DW"
@@ -395,6 +437,8 @@ Configuration AlterRegistry
          ValueType = "Dword"
          ValueData = 1
      }
+     <#
+     # commented out as it could affect other things badly
      Registry DisableErrorReportingName
      {
          Ensure = "Present"
@@ -403,6 +447,7 @@ Configuration AlterRegistry
          ValueType = "String"
          ValueData = ""
      }
+     #>
      <#
      Registry DisableSearchCompanion
      {
@@ -414,6 +459,7 @@ Configuration AlterRegistry
      }
      #>
      Registry DisableAdvertisingInfo
+     # Disable app access to user advertising information
      {
          Ensure = "Present"
          Key = "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\AdvertisingInfo"
@@ -423,6 +469,7 @@ Configuration AlterRegistry
      }
      <#
      Registry DisableAppCombat
+     # disables sending data to microsoft
      {
          Ensure = "Present"
          Key = "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\AppCompat"
@@ -431,6 +478,7 @@ Configuration AlterRegistry
          ValueData = 0
      }
      Registry DisableAppCombatInventory
+     # disables sending data to microsoft
      {
          Ensure = "Present"
          Key = "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\AppCompat"
@@ -439,6 +487,7 @@ Configuration AlterRegistry
          ValueData = 1
      }
      Registry DisableAppCombatAUR
+     # disables sending data to microsoft
      {
          Ensure = "Present"
          Key = "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\AppCompat"
@@ -448,6 +497,7 @@ Configuration AlterRegistry
      }
      
      Registry DisableDeviceMetadata
+     # Disable device metadata retrieval from the Internet
      {
          Ensure = "Present"
          Key = "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\Device Metadata"
@@ -457,6 +507,7 @@ Configuration AlterRegistry
      }
      
      Registry DisableDeviceInstall
+     # disables sending data to microsoft about failed driver installs
      {
          Ensure = "Present"
          Key = "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\DeviceInstall\Settings"
@@ -465,6 +516,7 @@ Configuration AlterRegistry
          ValueData = 1
      }
       Registry DisableDeviceInstallSoftware
+      # disables sending data to microsoft about failed software installs
      {
          Ensure = "Present"
          Key = "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\DeviceInstall\Settings"
@@ -474,6 +526,7 @@ Configuration AlterRegistry
      }
      
      Registry DisableGameUXDownload
+     # Disable game information and options retrieval from the Internet
      {
          Ensure = "Present"
          Key = "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\GameUX"
@@ -482,6 +535,7 @@ Configuration AlterRegistry
          ValueData = 0
      }
      Registry DisableGameUXUpdate
+     # Disable game information and options retrieval from the Internet
      {
          Ensure = "Present"
          Key = "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\GameUX"
@@ -490,6 +544,7 @@ Configuration AlterRegistry
          ValueData = 0
      }
      Registry DisableGameUXRecent
+     # Prevents recently played games being collected
      {
          Ensure = "Present"
          Key = "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\GameUX"
@@ -499,6 +554,7 @@ Configuration AlterRegistry
      }
      #>
      Registry DisableLocation
+     # Disable location and sensors
      {
          Ensure = "Present"
          Key = "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\LocationAndSensors"
@@ -507,6 +563,7 @@ Configuration AlterRegistry
          ValueData = 1
      }
      Registry DisableOneDrive
+     # Disable OneDrive for file storage
      {
          Ensure = "Present"
          Key = "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\OneDrive"
@@ -516,6 +573,7 @@ Configuration AlterRegistry
      }
      <#
      Registry DisableErrorReporting
+     # disables sending data to microsoft
      {
          Ensure = "Present"
          Key = "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\Windows Error Reporting"
@@ -524,6 +582,7 @@ Configuration AlterRegistry
          ValueData = 1
      }
      Registry DisableErrorReportingSend
+     # disables sending data to microsoft
      {
          Ensure = "Present"
          Key = "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\Windows Error Reporting"
@@ -533,6 +592,7 @@ Configuration AlterRegistry
      }
      #>
      Registry DisableSearchCortana
+     # Disable Cortana
      {
          Ensure = "Present"
          Key = "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\Windows Search"
@@ -541,6 +601,7 @@ Configuration AlterRegistry
          ValueData = 0
      }
      Registry DisableSearchLocation
+     # Disable Cortana
      {
          Ensure = "Present"
          Key = "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\Windows Search"
@@ -548,6 +609,7 @@ Configuration AlterRegistry
          ValueType = "Dword"
          ValueData = 0
      }
+     <#
      Registry DisableSearchPrivacy
      {
          Ensure = "Present"
@@ -580,7 +642,9 @@ Configuration AlterRegistry
          ValueType = "Dword"
          ValueData = 0
      }
-     Registry DisableSearchWebDisable
+     #>
+     Registry SetSearchWebDisable
+     # disable searching the web when searching
      {
          Ensure = "Present"
          Key = "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\Windows Search"
@@ -588,7 +652,8 @@ Configuration AlterRegistry
          ValueType = "Dword"
          ValueData = 1
      }
-     Registry DisableEdge
+     Registry DisableMFUTracking
+     # Prevent data collection in Edge
      {
          Ensure = "Present"
          Key = "HKEY_LOCAL_MACHINE\Software\Policies\Microsoft\Windows\EdgeUI"
@@ -597,6 +662,11 @@ Configuration AlterRegistry
          ValueData = 1
      }
      Registry DisableHibernation
+     # disable hibernation
+     # comment out if hibernation is something you want
+     # also be aware that on laptops hibernation is prefered rather than sleep since
+     # hibernation files are protected by bitlocker (if enabled)
+     # while sleep keeps everything in RAM which can be a security issue if device is stolen
      {
          Ensure = "Present"
          Key = "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Power"
@@ -604,7 +674,10 @@ Configuration AlterRegistry
          ValueType = "Dword"
          ValueData = 0
      }
-     Registry DisableOpenThisPc
+     Registry LaunchToThisPc
+     # when opening explorer it launches to this pc instead of quick access items
+     # this is the old behaviour of windows
+     # https://www.itechtics.com/configure-windows-10-file-explorer-open-pc-instead-quick-access/
      {
          Ensure = "Present"
          Key = "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced"
@@ -613,6 +686,8 @@ Configuration AlterRegistry
          ValueData = 1
      }
      Registry HideSearch
+     # hides the search bar from taskbar
+     # comment out if you want to keep the search bar
      {
          Ensure = "Present"
          Key = "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Search\"
@@ -621,6 +696,8 @@ Configuration AlterRegistry
          ValueData = 0
      }
      Registry ShowFileExtensions
+     # show file extenstions in Explorer
+     # comment out if you don't want file extensions
      {
          Ensure = "Present"
          Key = "HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced"
@@ -628,7 +705,8 @@ Configuration AlterRegistry
          ValueType = "Dword"
          ValueData = 0
      }
-     Registry ShowDeliverOptimization
+     Registry DisableDeliverOptimization
+     # disables delivery optimization, downloading/uploading updates from other pc's on internet/lan
      {
          Ensure = "Present"
          Key = "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\DeliveryOptimization\Config"
@@ -653,6 +731,7 @@ Configuration UninstallStoreApps
 #>
 
 Configuration RemoveFeatures
+# removes unsecure features not used by modern OS'es
 {
     Import-DscResource –ModuleName 'PSDesiredStateConfiguration'
     Node $env:COMPUTERNAME
