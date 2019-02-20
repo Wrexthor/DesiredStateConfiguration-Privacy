@@ -40,6 +40,8 @@ Configuration InitialScript
     }
 
 }
+# uncomment this if you want to use Chocolatey and change the applications that are installed accordingly
+<#
 Configuration InstallApplications
 # installs applications using Chocolatey
 # anything in Chocolatey repos can be added
@@ -113,7 +115,7 @@ Configuration InstallApplications
         }
     }
 }
-
+#>
 Configuration SetFirewall
 {
     Get-DscResource -Module NetworkingDsc
