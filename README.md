@@ -1,11 +1,12 @@
 ### A Desired State Configuration script to increase privacy and security in windows by disabling telemetry feaures in windows.
 
 Made to clean up a windows install by
-* Install applications using Chocolatey 
-* Disabling telemetry functions
+* Install applications using Chocolatey (commented out by default)
+* Enable and configure windows firewall in addition to block outgoing traffic for commonly exploited windows applications
+* Disabling telemetry functions using windows registry
 * Remove unecessary windows features (smb1, ps2 etc)
 * Stop/disable unecessary services (xbox, location etc)
-* Remove scheduled tasks (mostly telemetry related stuff)
+* Remove scheduled tasks (not implemented yet)
 * Set some default settings (show file extensions etc)
 
 This is done by using Desired State Configuration(DSC)
