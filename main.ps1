@@ -1,4 +1,16 @@
-# this scripts runs and applies selected configurations
+<#
+.SYNOPSIS
+   Script to configure and apply DSC templates
+.DESCRIPTION
+   GUI prompting user to chose what DSC templates to apply
+   installs required modules for DSC templates, runs DSC configurations
+   and installs the .mof files in addition to setting a DSC meta configuration
+   that automatically applies configuration every 30 minutes if configuration drift has occured
+.NOTES
+   Author: Wrexthor
+   Github: https://github.com/Wrexthor/DesiredStateConfiguration-Privacy
+#>
+
 function Use-RunAs 
     {    
         # Check if script is running as Adminstrator and if not use RunAs 
@@ -36,10 +48,7 @@ function Use-RunAs
 # make sure script is running as admin
 use-runas
 
-<# This form was created using POSHGUI.com  a free online gui designer for PowerShell
-.NAME
-    CheckBox
-#>
+# This form was created using POSHGUI.com  a free online gui designer for PowerShell
 
 Add-Type -AssemblyName System.Windows.Forms
 [System.Windows.Forms.Application]::EnableVisualStyles()
@@ -117,8 +126,7 @@ function doStuff()
         $items += 'install_apps.ps1'
     }
     if ($SetDefaults.Checked)
-    {
-        write-host "set defaults is checked"
+    {        
         #$modules +=
         $items += 'set_default_settings.ps1'
     }
@@ -133,7 +141,7 @@ function doStuff()
 $Button1.Add_Click(
 {        
     $script:obj = doStuff    
-    $Configuration.close() | out-null
+    $Configuration.close()
 })
 
 # show GUI
@@ -156,3 +164,23 @@ foreach ($item in $obj.items)
 {
     & ".\$item"
 }
+# apply meta configuration
+Set-DscLocalConfigurationManager -path (Get-ChildItem -Recurse -filter "*meta.mof").DirectoryName
+
+# get all .mof files except meta file
+$files = Get-ChildItem -Recurse -filter "*.mof" -Exclude "*meta.mof"
+
+# apply found files
+foreach($file in $files)
+{
+    Start-DscConfiguration -path $file.DirectoryName -force -JobName 'DSC'
+}
+
+# wait for jobs to finish
+get-job -Name 'DSC' | wait-job
+
+write-host "Configurations applied, have fun!" -ForegroundColor Green
+start-sleep -Seconds 5
+
+# if for some reason you want to remove the DSC configurations, uncomment below and run only that line
+#Remove-DscConfigurationDocument -Stage Current, Pending, Previous -Verbose
