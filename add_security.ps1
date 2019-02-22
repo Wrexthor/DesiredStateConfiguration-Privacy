@@ -31,6 +31,41 @@ Configuration RemoveFeatures
     }
 }
 
+# sets windows defender settings, preventing it from being disabled in the background
+Configuration WinDefender
+{
+    Import-DscResource -ModuleName 'WindowsDefender'
+    Node $env:COMPUTERNAME
+    {
+        WindowsDefender SetConfig
+        {
+            IsSingleInstance = 'Yes'
+            RealTimeScanDirection = 'Both'
+            RemediationScheduleDay = 'Everyday'
+            SignatureScheduleDay = 'Everyday'
+            MAPSReporting = 'Advanced'
+            DisableBehaviorMonitoring = $true
+            DisableIntrusionPreventionSystem = $true
+            DisableIOAVProtection = $true
+            DisableRealtimeMonitoring = $true
+            DisableScriptScanning = $true
+            DisableArchiveScanning = $true
+            DisableCatchupFullScan = $true
+            DisableCatchupQuickScan = $true
+            DisableEmailScanning = $true
+            DisableRemovableDriveScanning = $true
+            DisableRestorePoint = $true
+            DisableScanningMappedNetworkDrivesForFullScan = $true
+            DisableScanningNetworkFiles = $true
+            DisableBlockAtFirstSeen = $true
+            CloudBlockLevel= 'Default'
+            EnableNetworkProtection = 'Enabled'
+            AttackSurfaceReductionRules_Actions = 'Enabled'
+        }
+    }
+}
+
+
 Configuration SetFirewall
 {
     Import-DscResource -Module 'NetworkingDsc'
@@ -536,4 +571,5 @@ Configuration SetFirewall
 }
 
 RemoveFeatures
+WinDefender
 SetFirewall

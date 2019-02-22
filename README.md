@@ -2,7 +2,8 @@
 
 Made to clean up a windows install by
 * Install applications using Chocolatey (make sure to change the install_apps.ps1 file to only install apps you want)
-* Enable and configure windows firewall in addition to block outgoing traffic for commonly exploited windows applications (in add_security)
+* Enable and configure Windows Firewall in addition to block outgoing traffic for commonly exploited windows applications (in add_security)
+* Enable and configure Windows Defender to prevent it being disabled (in add_security, don't use this if you use other anti-virus products!)
 * Disabling telemetry functions using windows registry (in disable_telemetry)
 * Remove unecessary windows features, smb1, ps2 (in add_security)
 * Stop/disable unecessary services, xbox, location etc (in disable_telemetry)

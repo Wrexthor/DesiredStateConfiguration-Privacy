@@ -117,7 +117,7 @@ function doStuff()
     }
     if ($AddSecurity.Checked)
     {
-        $modules += 'NetworkingDsc'
+        $modules += 'NetworkingDsc', 'WindowsDefender'
         $items += 'add_security.ps1'
     }
     if ($InstallApps.Checked)
